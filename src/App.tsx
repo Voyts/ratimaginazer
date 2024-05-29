@@ -138,7 +138,7 @@ function App() {
           onClick={adjustPixelsLSB}
           disabled={!imageLoaded()}
         >
-          Adjust Pixels
+          Mix Pixels
         </Button>
         <Button onClick={downloadImage} disabled={!imageLoaded()}>
           Download Image
