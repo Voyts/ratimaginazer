@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
-    "predeploy": "npm run build",
+    "predeploy": "pnpm run build",
     "deploy": "gh-pages -d dist"
   },
   "license": "MIT",
