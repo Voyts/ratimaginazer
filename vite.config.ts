@@ -1,9 +1,10 @@
-import path from 'path';
-import { defineConfig } from 'vite';
-import solidPlugin from 'vite-plugin-solid';
+import path from "path";
+import { defineConfig } from "vite";
+import solidPlugin from "vite-plugin-solid";
 // import devtools from 'solid-devtools/vite';
 
 export default defineConfig({
+  base: "ratimaginazer",
   plugins: [
     /* 
     Uncomment the following line to enable solid-devtools.
@@ -16,11 +17,11 @@ export default defineConfig({
     port: 3000,
   },
   build: {
-    target: 'esnext',
+    target: "esnext",
   },
   resolve: {
     alias: {
-      "~": path.resolve(__dirname, "./src")
-    }
-  }
+      "~": path.resolve(__dirname, "./src"),
+    },
+  },
 });
