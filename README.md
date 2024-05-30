@@ -1,34 +1,15 @@
-## Usage
+# Image Upload and Modify
 
-Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.
+This project is a simple web application that allows users to upload an image (JPEG or PNG), modify its pixels using the Least Significant Bit (LSB) algorithm to make the image unique, and download the modified image. 
 
-This is the reason you see a `pnpm-lock.yaml`. That being said, any package manager will work. This file can be safely be removed once you clone a template.
+## Features
 
-```bash
-$ npm install # or pnpm install or yarn install
-```
+- **Image Upload**: Users can upload JPEG or PNG images.
+- **Pixel Modification**: The LSB algorithm is used to adjust the pixels of the image to ensure its uniqueness.
+- **Image Download**: Users can download the modified image.
 
-### Learn more on the [Solid Website](https://solidjs.com) and come chat with us on our [Discord](https://discord.com/invite/solidjs)
+## Technologies Used
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm run dev` or `npm start`
-
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br>
-
-### `npm run build`
-
-Builds the app for production to the `dist` folder.<br>
-It correctly bundles Solid in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
-
-## Deployment
-
-You can deploy the `dist` folder to any static host provider (netlify, surge, now, etc.)
+- **SolidJS**: A declarative, efficient, and flexible JavaScript library for building user interfaces.
+- **TypeScript**: A typed superset of JavaScript that compiles to plain JavaScript.
+- **HTML5 Canvas**: Used for rendering and modifying images.
