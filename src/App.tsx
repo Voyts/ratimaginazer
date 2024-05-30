@@ -6,6 +6,7 @@ import { Toaster, showToast } from "./components/ui/toast";
 function App() {
   let canvas: HTMLCanvasElement | null = null;
   let downloadLink: HTMLAnchorElement | null = null;
+  let compareCanvas: HTMLCanvasElement | null = null;
   const [context, setContext] = createSignal<CanvasRenderingContext2D | null>(
     null,
   );
@@ -18,7 +19,7 @@ function App() {
     if (input.files && input.files[0]) {
       const file = input.files[0];
       const reader = new FileReader();
-      setFileType(file.type); // Зберігаємо тип файлу
+      setFileType(file.type);
       reader.onload = (e) => {
         const result = e.target?.result as string;
 
@@ -31,17 +32,6 @@ function App() {
 
             let targetWidth = originalWidth;
             let targetHeight = originalHeight;
-            if (originalWidth > originalHeight) {
-              if (originalWidth > 300) {
-                targetWidth = 300;
-                targetHeight = (300 * originalHeight) / originalWidth;
-              }
-            } else {
-              if (originalHeight > 300) {
-                targetHeight = 300;
-                targetWidth = (300 * originalWidth) / originalHeight;
-              }
-            }
 
             canvas.width = targetWidth;
             canvas.height = targetHeight;
@@ -54,6 +44,32 @@ function App() {
               setImageData(imgData);
               setImageLoaded(true);
               console.log("Image loaded successfully");
+
+              if (!compareCanvas) {
+                compareCanvas = document.createElement("canvas");
+                compareCanvas.width = targetWidth;
+                compareCanvas.height = targetHeight;
+                compareCanvas.style.marginLeft = "20px";
+                document
+                  .getElementById("canvas-container")
+                  ?.appendChild(compareCanvas);
+              }
+              const compareCtx = compareCanvas.getContext("2d");
+              if (compareCtx) {
+                compareCanvas.width = originalWidth;
+                compareCanvas.height = originalHeight;
+                compareCtx.drawImage(
+                  image,
+                  0,
+                  0,
+                  originalWidth,
+                  originalHeight,
+                );
+              } else {
+                console.log(
+                  "Error: Unable to get 2d context for compareCanvas",
+                );
+              }
             }
           }
         };
@@ -67,30 +83,16 @@ function App() {
     const imgData = imageData();
     if (ctx && imgData) {
       const data = imgData.data;
-      let pixelsChanged = 0;
       for (let i = 0; i < data.length; i += 4) {
-        const rOriginal = data[i];
-        const gOriginal = data[i + 1];
-        const bOriginal = data[i + 2];
-
-        const rNew = (rOriginal & 0xfe) | (Math.random() > 0.5 ? 1 : 0);
-        const gNew = (gOriginal & 0xfe) | (Math.random() > 0.5 ? 1 : 0);
-        const bNew = (bOriginal & 0xfe) | (Math.random() > 0.5 ? 1 : 0);
-
-        if (rOriginal !== rNew || gOriginal !== gNew || bOriginal !== bNew) {
-          pixelsChanged++;
-        }
-
-        data[i] = rNew; // R
-        data[i + 1] = gNew; // G
-        data[i + 2] = bNew; // B
-        // Альфа-канал (data[i + 3]) не змінюється
+        data[i] = (data[i] & 0xfe) | (Math.random() > 0.5 ? 1 : 0); // R
+        data[i + 1] = (data[i + 1] & 0xfe) | (Math.random() > 0.5 ? 1 : 0); // G
+        data[i + 2] = (data[i + 2] & 0xfe) | (Math.random() > 0.5 ? 1 : 0); // B
       }
       ctx.putImageData(imgData, 0, 0);
       console.log("Pixels adjusted successfully");
       showToast({
-        title: "Image modified",
-        description: `Number of pixels changed: ${pixelsChanged}`,
+        title: "image modified.",
+        description: "done",
         variant: "success",
       });
     } else {
@@ -99,6 +101,61 @@ function App() {
         title: "Unable to adjust pixels",
         variant: "error",
       });
+    }
+  };
+
+  const compareImages = () => {
+    if (!compareCanvas) {
+      console.log("Error: compareCanvas is not initialized");
+      return;
+    }
+
+    const ctx = context();
+    const imgData = imageData();
+    if (ctx && imgData) {
+      const compareCtx = compareCanvas.getContext("2d");
+      if (compareCtx) {
+        const originalData = compareCtx.getImageData(
+          0,
+          0,
+          compareCanvas.width,
+          compareCanvas.height,
+        );
+        const data = imgData.data;
+        const original = originalData.data;
+        const diff = compareCtx.createImageData(
+          compareCanvas.width,
+          compareCanvas.height,
+        );
+        const diffData = diff.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          if (
+            data[i] !== original[i] ||
+            data[i + 1] !== original[i + 1] ||
+            data[i + 2] !== original[i + 2]
+          ) {
+            diffData[i] = 255; // Red
+            diffData[i + 1] = 0; // Green
+            diffData[i + 2] = 0; // Blue
+            diffData[i + 3] = 255; // Alpha
+          } else {
+            diffData[i] = original[i];
+            diffData[i + 1] = original[i + 1];
+            diffData[i + 2] = original[i + 2];
+            diffData[i + 3] = original[i + 3];
+          }
+        }
+        compareCtx.putImageData(diff, 0, 0);
+        showToast({
+          title: "Images compared successfully",
+          description: "done",
+          variant: "success",
+        });
+        console.log("Images compared successfully");
+      } else {
+        console.log("Error: Unable to get 2d context for compareCanvas");
+      }
     }
   };
 
@@ -123,10 +180,18 @@ function App() {
         onChange={handleFileUpload}
         class="w-full max-w-xs mb-4"
       />
-      <div class="w-full mb-4 flex justify-center">
+
+      <div id="canvas-container" class="w-full mb-4 flex justify-center">
         <canvas
           ref={(el) => (canvas = el)}
           class="max-w-full max-h-72" // максимальна висота 300 пікселів
+          style={{
+            display: imageLoaded() ? "block" : "none",
+          }}
+        />
+        <canvas
+          ref={(el) => (compareCanvas = el)}
+          class="max-w-full max-h-72 ml-4" // максимальна висота 300 пікселів
           style={{
             display: imageLoaded() ? "block" : "none",
           }}
@@ -138,7 +203,10 @@ function App() {
           onClick={adjustPixelsLSB}
           disabled={!imageLoaded()}
         >
-          Mix Pixels
+          Adjust Pixels
+        </Button>
+        <Button onClick={compareImages} disabled={!imageLoaded()}>
+          Compare Image
         </Button>
         <Button onClick={downloadImage} disabled={!imageLoaded()}>
           Download Image
